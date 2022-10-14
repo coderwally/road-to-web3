@@ -3,7 +3,7 @@
 // contracts/BuyMeACoffee.sol
 pragma solidity ^0.8.0;
 
-// Contract Address on Goerli: 0x9452B55B7C816b1d0D6FA21B92E944fF381024f4
+// Contract Address on Goerli: 0xd1eF9e6381bb06E6F6280fc54E806656617A051d
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
@@ -13,7 +13,8 @@ contract BuyMeACoffee {
         address indexed from,
         uint256 timestamp,
         string name,
-        string message
+        string message,
+        uint256 amount
     );
     
     // Memo struct.
@@ -22,19 +23,22 @@ contract BuyMeACoffee {
         uint256 timestamp;
         string name;
         string message;
+        uint256 amount;
     }
     
-    // Address of contract deployer. Marked payable so that
-    // we can withdraw to this address later.
-    address payable owner;
+    // Address of contract deployer
+    address owner;
+
+    // Address where to withdraw the tips to
+    address payable withdrawalAddress;
 
     // List of all memos received from coffee purchases.
     Memo[] memos;
 
     constructor() {
-        // Store the address of the deployer as a payable address.
-        // When we withdraw funds, we'll withdraw here.
-        owner = payable(msg.sender);
+        //Deployer is the owner of the contract and the initial address to withdraw to
+        owner = msg.sender;
+        withdrawalAddress = payable(msg.sender);
     }
 
     /**
@@ -58,7 +62,8 @@ contract BuyMeACoffee {
             msg.sender,
             block.timestamp,
             _name,
-            _message
+            _message,
+            msg.value
         ));
 
         // Emit a NewMemo event with details about the memo.
@@ -66,7 +71,8 @@ contract BuyMeACoffee {
             msg.sender,
             block.timestamp,
             _name,
-            _message
+            _message,
+            msg.value
         );
     }
 
@@ -74,6 +80,15 @@ contract BuyMeACoffee {
      * @dev send the entire balance stored in this contract to the owner
      */
     function withdrawTips() public {
-        require(owner.send(address(this).balance));
+        require(withdrawalAddress.send(address(this).balance));
+    }
+
+    /**
+     * @dev change the withdrawal address for tips. Only the owner can do this
+     */
+    function setWithdrawalAddress (address _withdrawalAddress) public {
+        require(msg.sender == owner, "Only the owner can call this function");
+        require(_withdrawalAddress != address(0), "Invalid withdrawal address");
+        withdrawalAddress = payable(_withdrawalAddress);
     }
 }

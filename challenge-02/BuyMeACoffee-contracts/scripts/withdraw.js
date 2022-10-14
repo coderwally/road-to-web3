@@ -10,7 +10,7 @@ async function getBalance(provider, address) {
 
 async function main() {
   // Get the contract that has been deployed to Goerli.
-  const contractAddress="0xfe05d63C5B8E7FafB4cCe1Ab47b9061b33410714";
+  const contractAddress="0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const contractABI = abi.abi;
 
   // Get the node connection and wallet connection.
